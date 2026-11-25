@@ -4,7 +4,7 @@
 // =====================================================
 const VERSION = "english-book-v2";
 const FILES = ["./", "index.html", "app.js", "units.js", "manifest.json",
-               "icons/icon-192.png", "icons/icon-512.png"];
+               "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)));
