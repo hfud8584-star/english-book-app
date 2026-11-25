@@ -1,18 +1,25 @@
 // =====================================================
 //  app.js — طريقة عمل التطبيق (الصفحات، الاختبار، الحفظ)
-//  المحتوى نفسه موجود في units.js
+//  المحتوى يأتي من Firebase بعد تسجيل الدخول (انظر auth.js)
 // =====================================================
 
 const app   = document.getElementById("app");
 const title = document.getElementById("title");
 const back  = document.getElementById("back");
 
-// ---------- حفظ تقدّم الطالب على جهازه ----------
+// الوحدات — يملؤها auth.js بعد موافقة الأستاذ على الطالب
+let UNITS = [];
+
+// ---------- حفظ تقدّم الطالب ----------
 // progress.quiz[رقم الوحدة] = أعلى درجة (نسبة مئوية)
 // progress.known[الكلمة]    = true إذا قال الطالب إنه يعرفها
+// يُحفظ على الجهاز، ويُرسل أيضاً إلى حساب الطالب ليراه الأستاذ
 const SAVE_KEY = "english-book-progress";
 let progress = JSON.parse(localStorage.getItem(SAVE_KEY) || '{"quiz":{},"known":{}}');
-function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); }
+function save() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
+  if (EB.onProgressSave) EB.onProgressSave(progress);
+}
 
 const openUnits = () => UNITS.filter(u => !u.locked);
 
@@ -57,6 +64,10 @@ function setPage(text, navPage, backTo) {
 function showHome() {
   setPage("English Book · 6th Science", "home");
   const p = totalPercent();
+  if (!UNITS.length) {
+    app.innerHTML = `<div class="card">لم يُرفع محتوى الكتاب بعد. سيظهر هنا عندما يرفعه الأستاذ.</div>`;
+    return;
+  }
   app.innerHTML = `
     <div class="card hero">
       <h2>أهلاً بك 👋</h2>
@@ -261,7 +272,9 @@ function showProgress() {
         <div class="muted">الكلمات المحفوظة: ${known} من ${u.words.length}</div>
         ${bar(unitPercent(u))}</div>`;
     }).join("") +
-    `<button class="secondary" id="reset">مسح التقدّم والبدء من جديد</button>`;
+    `<button class="secondary" id="reset">مسح التقدّم والبدء من جديد</button>
+     <button class="secondary" id="logout">🚪 تسجيل الخروج</button>`;
+  app.querySelector("#logout").onclick = () => EB.logout && EB.logout();
   app.querySelector("#reset").onclick = () => {
     if (confirm("هل تريد مسح كل تقدّمك؟")) {
       progress = { quiz: {}, known: {} }; save(); showProgress();
@@ -296,7 +309,25 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 }
 
 // ---------- الشريط السفلي ----------
-const PAGES = { home: showHome, review: showReview, progress: showProgress };
+const PAGES = { home: showHome, review: showReview, progress: showProgress,
+                teacher: () => EB.showTeacher() };
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => PAGES[b.dataset.page]());
 
-showHome();
+// ---------- ما يحتاجه auth.js من هذا الملف ----------
+// التطبيق لا يبدأ هنا؛ يبدأ من auth.js بعد تسجيل الدخول والموافقة
+const EB = window.EB = {
+  setPage, bar, pct, showHome,
+  setUnits(list) { UNITS = list; },
+  // يدمج تقدّم الطالب المحفوظ في حسابه مع المحفوظ على الجهاز (يأخذ الأفضل)
+  loadProgress(remote) {
+    if (!remote) return;
+    for (const [n, score] of Object.entries(remote.quiz || {}))
+      progress.quiz[n] = Math.max(score, progress.quiz[n] || 0);
+    Object.assign(progress.known, remote.known || {});
+    localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
+  },
+  resetLocal() {
+    progress = { quiz: {}, known: {} };
+    localStorage.removeItem(SAVE_KEY);
+  }
+};
