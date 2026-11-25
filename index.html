@@ -130,6 +130,22 @@
     }
     nav button span { display: block; font-size: 22px; }
     nav button.active { color: var(--main); font-weight: 700; }
+
+    /* ----- تسجيل الدخول ولوحة الأستاذ ----- */
+    .field {
+      display: block; width: 100%; padding: 12px; margin: 6px 0 12px;
+      border: 2px solid var(--light); border-radius: 10px; font: inherit; background: white;
+    }
+    .center { text-align: center; }
+    .big { font-size: 46px; }
+    .small-btns { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .small-btns button {
+      flex: 1; padding: 9px; border: none; border-radius: 9px; font-weight: 600; font-size: 14px;
+    }
+    .ok   { background: #e6f4ec; color: var(--good); }
+    .stop { background: #fbeaea; color: var(--bad); }
+    .grey { background: #eef1f0; color: var(--muted); }
+    .error { background: #fbeaea; color: var(--bad); padding: 10px; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -140,16 +156,18 @@
     <h1 id="title">English Book</h1>
   </header>
 
-  <main id="app"></main>
+  <main id="app"><div class="card center">⏳ جارٍ التحميل…</div></main>
 
-  <nav>
+  <nav style="display:none">
     <button data-page="home"><span>🏠</span>الرئيسية</button>
     <button data-page="review"><span>🃏</span>مراجعة</button>
     <button data-page="progress"><span>📊</span>تقدّمي</button>
+    <!-- يظهر للأستاذ فقط -->
+    <button data-page="teacher" style="display:none"><span>👨‍🏫</span>الطلاب</button>
   </nav>
 
   <!-- ===== JavaScript ===== -->
-  <script src="units.js"></script>  <!-- المحتوى -->
-  <script src="app.js"></script>    <!-- طريقة العمل -->
+  <script src="app.js"></script>                 <!-- طريقة عمل التطبيق -->
+  <script type="module" src="auth.js"></script>  <!-- تسجيل الدخول وموافقة الأستاذ -->
 </body>
 </html>

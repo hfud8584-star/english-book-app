@@ -1,0 +1,41 @@
+rules_version = '2';
+// =====================================================
+//  قواعد الحماية — تُلصق في Firebase: Firestore Database ← Rules
+//  هي التي تمنع غير المقبولين من قراءة الكتاب فعلاً
+// =====================================================
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn()  { return request.auth != null; }
+    function isTeacher() { return signedIn() && exists(/databases/$(db)/documents/admins/$(request.auth.uid)); }
+    function approved()  {
+      return signedIn() &&
+        get(/databases/$(db)/documents/users/$(request.auth.uid)).data.status == "approved";
+    }
+
+    // الأستاذ: يُضاف يدوياً من موقع Firebase فقط
+    match /admins/{uid} {
+      allow read:  if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // الطلاب
+    match /users/{uid} {
+      allow read:   if isTeacher() || (signedIn() && request.auth.uid == uid);
+      // الطالب ينشئ طلبه فقط بحالة "pending"
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.status == "pending";
+      // الطالب يعدّل تقدّمه فقط، ولا يستطيع تغيير حالته أو شعبته
+      allow update: if isTeacher() || (signedIn() && request.auth.uid == uid
+                    && request.resource.data.status == resource.data.status
+                    && request.resource.data.section == resource.data.section);
+      allow delete: if isTeacher();
+    }
+
+    // محتوى الكتاب: يقرؤه المقبولون فقط، ويكتبه الأستاذ فقط
+    match /content/{unit} {
+      allow read:  if isTeacher() || approved();
+      allow write: if isTeacher();
+    }
+  }
+}

@@ -1,10 +1,11 @@
 // =====================================================
 //  sw.js — يحفظ ملفات التطبيق في الهاتف ليعمل بدون إنترنت
-//  مهم: كلما عدّلت المحتوى غيّر رقم النسخة (v1 → v2) ليصل التحديث للطلاب
+//  مهم: كلما عدّلت ملفات التطبيق غيّر رقم النسخة (v3 → v4) ليصل التحديث للطلاب
+//  (محتوى الكتاب لا يحتاج ذلك؛ يأتي من Firebase)
 // =====================================================
-const VERSION = "english-book-v2";
-const FILES = ["./", "index.html", "app.js", "units.js", "manifest.json",
-               "icon-192.png", "icon-512.png"];
+const VERSION = "english-book-v3";
+const FILES = ["./", "index.html", "app.js", "auth.js", "firebase-config.js",
+               "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)));
@@ -18,9 +19,12 @@ self.addEventListener("activate", e => {
   self.clients.claim();
 });
 
-// جرّب الإنترنت أولاً (لأحدث محتوى)، وإذا لم يتوفر استعمل النسخة المحفوظة
+// نحفظ فقط ملفات التطبيق ومكتبة Firebase، ولا نتدخل في اتصالات Firebase نفسها
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
+  const url = new URL(e.request.url);
+  const ours = url.origin === location.origin || url.hostname === "www.gstatic.com";
+  if (e.request.method !== "GET" || !ours) return;
+  // جرّب الإنترنت أولاً (لأحدث نسخة)، وإذا لم يتوفر استعمل النسخة المحفوظة
   e.respondWith(
     fetch(e.request)
       .then(res => {
