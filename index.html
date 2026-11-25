@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>English Book · 6th Science</title>
+
+  <!-- ===== إعدادات التطبيق على الهاتف ===== -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f6f5c">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <!-- ===== CSS: الألوان والترتيب ===== -->
+  <style>
+    :root {
+      --main: #1f6f5c;      /* اللون الرئيسي */
+      --main-dark: #17574a;
+      --light: #e8f3ef;     /* لون فاتح للخلفيات */
+      --text: #1d2b27;
+      --muted: #6b7c77;
+      --bg: #f7faf9;
+      --card: #ffffff;
+      --good: #2e8b57;
+      --bad: #c0392b;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 76px; /* مكان الشريط السفلي */
+    }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
+    /* ----- الشريط العلوي ----- */
+    header {
+      background: var(--main); color: white;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 5;
+    }
+    header h1 { font-size: 19px; margin: 0; flex: 1; }
+    #back { background: none; border: none; color: white; font-size: 22px; display: none; }
+
+    main { max-width: 640px; margin: 0 auto; padding: 16px; }
+    h2 { font-size: 18px; margin: 6px 0 12px; }
+
+    /* ----- البطاقات ----- */
+    .card {
+      background: var(--card); border-radius: 14px; padding: 16px;
+      margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .en { direction: ltr; text-align: left; }   /* النص الإنكليزي من اليسار */
+    .muted { color: var(--muted); font-size: 14px; }
+
+    /* ----- بطاقة الترحيب ----- */
+    .hero { background: linear-gradient(135deg, var(--main), var(--main-dark)); color: white; }
+    .hero .muted { color: #cfe7df; }
+    .bar { height: 8px; background: var(--light); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+    .bar span { display: block; height: 100%; background: var(--good); border-radius: 8px; }
+    .hero .bar { background: rgba(255,255,255,.25); }
+    .hero .bar span { background: white; }
+
+    /* ----- قائمة الوحدات ----- */
+    .unit { display: flex; align-items: center; gap: 14px; border: none; width: 100%; text-align: right; }
+    .unit .num {
+      background: var(--light); color: var(--main); flex-shrink: 0;
+      width: 46px; height: 46px; border-radius: 12px;
+      display: grid; place-items: center; font-weight: bold; font-size: 18px;
+    }
+    .unit .info { flex: 1; }
+    .locked { opacity: .5; cursor: default; }
+    .badge { background: #fff4d6; color: #8a6d1a; font-size: 12px; padding: 2px 8px; border-radius: 8px; }
+
+    /* ----- تبويبات الوحدة ----- */
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
+    .tabs button {
+      flex: 1; min-width: 64px; padding: 10px 6px; border: none; border-radius: 10px;
+      background: var(--light); color: var(--main); font-weight: 600; font-size: 14px;
+    }
+    .tabs button.active { background: var(--main); color: white; }
+
+    /* ----- القراءة والكلمات ----- */
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .row b { font-size: 18px; }
+    .speak {
+      background: var(--light); border: none; border-radius: 50%; flex-shrink: 0;
+      width: 40px; height: 40px; font-size: 16px;
+    }
+    .reading p { line-height: 1.7; margin: 0; }
+
+    /* ----- الاختبار ----- */
+    .option {
+      display: block; width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px;
+      border: 2px solid var(--light); background: white; text-align: left; direction: ltr;
+    }
+    .option.correct { border-color: var(--good); background: #e6f4ec; }
+    .option.wrong   { border-color: var(--bad);  background: #fbeaea; }
+    .score { text-align: center; font-size: 30px; font-weight: bold; color: var(--main); margin: 8px 0; }
+    .primary {
+      background: var(--main); color: white; border: none;
+      padding: 13px; border-radius: 10px; width: 100%; font-weight: 600; margin-top: 8px;
+    }
+    .secondary {
+      background: var(--light); color: var(--main); border: none;
+      padding: 13px; border-radius: 10px; width: 100%; font-weight: 600; margin-top: 8px;
+    }
+    .two { display: flex; gap: 8px; }
+
+    /* ----- بطاقات المراجعة (تنقلب عند اللمس) ----- */
+    .flash {
+      min-height: 190px; display: grid; place-items: center; text-align: center;
+      font-size: 28px; font-weight: bold; border: none; width: 100%;
+    }
+    .flash small { display: block; font-size: 13px; font-weight: normal; color: var(--muted); margin-top: 10px; }
+
+    /* ----- الفيديو ----- */
+    .video { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 10px; background: #000; }
+
+    /* ----- الشريط السفلي ----- */
+    nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: white;
+      display: flex; border-top: 1px solid #e3ebe8; padding-bottom: env(safe-area-inset-bottom);
+    }
+    nav button {
+      flex: 1; border: none; background: none; padding: 8px 0 10px;
+      font-size: 12px; color: var(--muted);
+    }
+    nav button span { display: block; font-size: 22px; }
+    nav button.active { color: var(--main); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HTML: هيكل الصفحة ===== -->
+  <header>
+    <button id="back" aria-label="رجوع">→</button>
+    <h1 id="title">English Book</h1>
+  </header>
+
+  <main id="app"></main>
+
+  <nav>
+    <button data-page="home"><span>🏠</span>الرئيسية</button>
+    <button data-page="review"><span>🃏</span>مراجعة</button>
+    <button data-page="progress"><span>📊</span>تقدّمي</button>
+  </nav>
+
+  <!-- ===== JavaScript ===== -->
+  <script src="units.js"></script>  <!-- المحتوى -->
+  <script src="app.js"></script>    <!-- طريقة العمل -->
+</body>
+</html>
